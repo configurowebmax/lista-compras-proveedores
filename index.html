@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Compras a Proveedores Gratis | ConfiguroWeb</title>
+    <meta name="description" content="Crea listas de compras a proveedores con checklist de stock faltante. Herramienta gratuita para gestionar inventario de tu negocio.">
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Plus Jakarta Sans', sans-serif; }</style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between">
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+            <span class="text-xl font-bold text-purple-600">Configuro<span class="text-slate-900">Web</span></span>
+            <a href="https://configuroweb.com/tag/gratis" class="text-sm font-medium text-slate-600 hover:text-purple-600">← Volver a Apps Gratuitas</a>
+        </div>
+    </header>
+    <main class="max-w-3xl mx-auto px-4 py-8 flex-grow w-full">
+        <div class="text-center mb-8">
+            <h1 class="text-2xl md:text-3xl font-bold text-slate-900 mb-2">Lista de Compras a Proveedores</h1>
+            <p class="text-slate-500 text-sm">Checklist simple de stock faltante para tu próxima compra.</p>
+        </div>
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs mb-6">
+            <form id="addForm" class="flex gap-2" onsubmit="event.preventDefault(); addItem();">
+                <input type="text" id="itemName" placeholder="Ej. Harina 1kg" class="flex-1 px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:border-purple-500">
+                <input type="text" id="itemQty" placeholder="Cant." class="w-20 px-3 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:border-purple-500">
+                <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white font-medium px-4 py-2 rounded-xl text-sm cursor-pointer">Agregar</button>
+            </form>
+        </div>
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-sm font-semibold text-slate-900">Artículos Pendientes (<span id="pendingCount">0</span>)</h3>
+                <button onclick="clearAll()" class="text-xs text-rose-500 hover:underline cursor-pointer">Limpiar Todo</button>
+            </div>
+            <div id="itemList" class="space-y-2 min-h-[100px]"></div>
+        </div>
+    </main>
+    <footer class="bg-white border-t border-slate-200 mt-12">
+        <div class="max-w-5xl mx-auto px-4 py-6">
+            <div class="bg-gradient-to-r from-purple-50 to-slate-50 border border-purple-100 rounded-2xl p-4 md:p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="text-center md:text-left">
+                    <h4 class="text-sm md:text-base font-bold text-slate-900">¿No vuelves a quedarte sin stock?</h4>
+                    <p class="text-xs md:text-sm text-slate-600">Recibe alertas automáticas de inventario bajo con nuestra plataforma para negocios.</p>
+                </div>
+                <a href="https://appscweb.com/negocios/" target="_blank" class="bg-purple-600 hover:bg-purple-700 text-white text-xs md:text-sm font-semibold px-5 py-2.5 rounded-xl text-center">Probar SaaS de Negocios →</a>
+            </div>
+            <div class="text-center text-xs text-slate-400 mt-6">&copy; 2026 ConfiguroWeb. Herramientas de uso libre con persistencia local segura.</div>
+        </div>
+    </footer>
+    <script>
+        const K = 'cw_shopping_list';
+        document.addEventListener('DOMContentLoaded', render);
+        function addItem() {
+            const name = document.getElementById('itemName').value.trim();
+            const qty = document.getElementById('itemQty').value.trim() || '1';
+            if (!name) return;
+            let items = JSON.parse(localStorage.getItem(K)) || [];
+            items.unshift({ id: Date.now(), name, qty, done: false });
+            localStorage.setItem(K, JSON.stringify(items));
+            document.getElementById('itemName').value = '';
+            document.getElementById('itemQty').value = '';
+            render();
+        }
+        function toggle(id) {
+            let items = JSON.parse(localStorage.getItem(K)) || [];
+            const it = items.find(i => i.id === id);
+            if (it) it.done = !it.done;
+            localStorage.setItem(K, JSON.stringify(items));
+            render();
+        }
+        function removeItem(id) {
+            let items = JSON.parse(localStorage.getItem(K)) || [];
+            items = items.filter(i => i.id !== id);
+            localStorage.setItem(K, JSON.stringify(items));
+            render();
+        }
+        function clearAll() {
+            localStorage.removeItem(K);
+            render();
+        }
+        function render() {
+            const list = document.getElementById('itemList');
+            const items = JSON.parse(localStorage.getItem(K)) || [];
+            const pending = items.filter(i => !i.done).length;
+            document.getElementById('pendingCount').innerText = pending;
+            if (items.length === 0) {
+                list.innerHTML = '<p class="text-center py-4 text-slate-400 text-sm">No hay artículos en la lista.</p>';
+                return;
+            }
+            list.innerHTML = items.map(i => `
+                <div class="flex items-center gap-3 p-3 rounded-lg border border-slate-100 ${i.done ? 'bg-emerald-50 opacity-60' : 'bg-slate-50'}">
+                    <input type="checkbox" ${i.done ? 'checked' : ''} onchange="toggle(${i.id})" class="w-5 h-5 accent-purple-600 cursor-pointer">
+                    <div class="flex-1 ${i.done ? 'line-through' : ''}">
+                        <span class="text-sm font-medium text-slate-800">${escapeHtml(i.name)}</span>
+                        ${i.qty !== '1' ? `<span class="text-xs text-slate-500 ml-2">x${escapeHtml(i.qty)}</span>` : ''}
+                    </div>
+                    <button onclick="removeItem(${i.id})" class="text-rose-400 hover:text-rose-600 text-xs cursor-pointer">✕</button>
+                </div>
+            `).join('');
+        }
+        function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+    </script>
+</body>
+</html>
