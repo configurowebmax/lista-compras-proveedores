@@ -22,3 +22,7 @@ Aplicación web gratuita para crear **listas de compras a proveedores** con chec
 ---
 
 &copy; 2026 ConfiguroWeb.
+
+## Colección de Herramientas
+
+[30 Aplicaciones Web Gratis Online Sin Registro - ConfiguroWeb](https://configuroweb.com/30-aplicaciones-web-gratis-online-sin-registro-configuroweb)
